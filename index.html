@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة النور للتلخيص الذكي</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; direction: rtl; background: #f4f7f9; color: #333; text-align: right; margin: 0; }
+        .header { background: linear-gradient(135deg, #0088cc, #005580); color: white; padding: 20px; border-radius: 0 0 20px 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { padding: 10px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #2c3e50; font-size: 14px; }
+        select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 2px solid #dfe6e9; font-size: 16px; background: white; outline: none; transition: border 0.3s; appearance: none; }
+        select:focus { border-color: #0088cc; }
+        .step { display: none; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .step.active { display: block; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        button.send-btn { width: 100%; padding: 16px; margin-top: 25px; border-radius: 12px; background: #27ae60; color: white; font-size: 18px; font-weight: bold; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3); }
+        button:disabled { background: #bdc3c7; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h2 style="margin:0;">🌟 منصة النور التعليمية</h2>
+    <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">مشروع النور الذكي</p>
+</div>
+<div class="container">
+    <div id="step-country" class="step active">
+        <label>📍 اختر الدولة:</label>
+        <select id="country" onchange="updateStages()">
+            <option value="">-- اختر الدولة --</option>
+            <option value="JO">الأردن 🇯🇴</option>
+            <option value="QA">قطر 🇶🇦</option>
+            <option value="SA">السعودية 🇸🇦</option>
+        </select>
+    </div>
+    <div id="step-stage" class="step"><label>🏫 المرحلة:</label><select id="stage" onchange="updateGrades()"></select></div>
+    <div id="step-grade" class="step"><label>📚 الصف:</label><select id="grade" onchange="handleGradeLogic()"></select></div>
+    <div id="step-branch" class="step"><label id="branch-label">⚖️ الفرع/المسار:</label><select id="branch" onchange="updateSubjects()"></select></div>
+    <div id="step-subject" class="step"><label>📘 المادة:</label><select id="subject" onchange="showNext('step-semester')"></select></div>
+    <div id="step-semester" class="step">
+        <label>📅 الفصل:</label>
+        <select id="semester" onchange="showNext('step-unit')">
+            <option value="">-- اختر الفصل --</option>
+            <option value="S1">الأول</option><option value="S2">الثاني</option><option value="S3">الثالث (للسعودية)</option>
+        </select>
+    </div>
+    <div id="step-unit" class="step">
+        <label>🗂️ الوحدة:</label>
+        <select id="unit" onchange="showNext('step-lesson')">
+            <option value="">-- اختر الوحدة --</option>
+            <script>for(let i=1; i<=10; i++) document.write('<option value="U'+i+'">الوحدة '+i+'</option>');</script>
+        </select>
+    </div>
+    <div id="step-lesson" class="step">
+        <label>📖 الدرس:</label>
+        <select id="lesson" onchange="showNext('step-final')">
+            <option value="">-- اختر الدرس --</option>
+            <script>for(let i=1; i<=20; i++) document.write('<option value="'+i+'">الدرس '+i+'</option>');</script>
+        </select>
+    </div>
+    <div id="step-final" class="step">
+        <button id="submitBtn" class="send-btn" onclick="submitData()">تأكيد وإرسال 🚀</button>
+    </div>
+</div>
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+const subjectMap = { 'الفيزياء': 'PHY', 'الرياضيات': 'MATH', 'الإنجليزية': 'ENG', 'العربية': 'ARB', 'الدين': 'ISL', 'الأحياء': 'BIO', 'الكيمياء': 'CHEM', 'تقنية رقمية': 'DIGIT', 'علم الحاسوب': 'CS', 'تكنولوجيا المعلومات': 'IT', 'العلوم': 'SCI', 'الاجتماعيات': 'SOCST', 'التاريخ': 'HIS', 'الجغرافيا': 'GEO' };
+function showNext(id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
+function updateStages() {
+    const c = document.getElementById('country').value;
+    const s = document.getElementById('stage');
+    s.innerHTML = '<option value="">-- اختر المرحلة --</option>';
+    if (c === 'JO') s.innerHTML += '<option value="basic">الأساسية</option><option value="secondary">الثانوية</option>';
+    else if (c === 'SA') s.innerHTML += '<option value="elementary">الابتدائية</option><option value="intermediate">المتوسطة</option><option value="secondary">الثانوية</option>';
+    else if (c === 'QA') s.innerHTML += '<option value="elementary">الابتدائية</option><option value="preparatory">الإعدادية</option><option value="secondary">الثانوية</option>';
+    showNext('step-stage');
+}
+function updateGrades() {
+    const stage = document.getElementById('stage').value;
+    const country = document.getElementById('country').value;
+    const g = document.getElementById('grade');
+    g.innerHTML = '<option value="">-- اختر الصف --</option>';
+    if (country === 'JO') {
+        if (stage === 'basic') for(let i=1; i<=10; i++) g.innerHTML += '<option value="G'+i+'">الصف '+i+'</option>';
+        else g.innerHTML += '<option value="G11">11</option><option value="G12">12</option>';
+    } else if (country === 'SA') {
+        if (stage === 'secondary') for(let i=1; i<=3; i++) g.innerHTML += '<option value="G'+(i+9)+'">السنة '+i+' ثانوي</option>';
+        else for(let i=1; i<=6; i++) g.innerHTML += '<option value="G'+i+'">الصف '+i+'</option>';
+    }
+    showNext('step-grade');
+}
+function handleGradeLogic() {
+    const grade = document.getElementById('grade').value;
+    const country = document.getElementById('country').value;
+    const gNum = parseInt(grade.replace('G', ''));
+    const bS = document.getElementById('step-branch');
+    const b = document.getElementById('branch');
+    if (gNum >= 10) {
+        bS.classList.add('active');
+        if (country === 'SA') b.innerHTML = '<option value="">-- مسار --</option><option value="GEN">عام</option><option value="HEALTH">صحة</option><option value="ENGIN">هندسة</option>';
+        else b.innerHTML = '<option value="">-- فرع --</option><option value="SCI">علمي</option><option value="ART">أدبي</option><option value="TECH">تكنولوجيا</option>';
+    } else { b.innerHTML = '<option value="GEN">عام</option>'; b.value = "GEN"; bS.classList.remove('active'); updateSubjects(); }
+}
+function updateSubjects() {
+    const sub = document.getElementById('subject');
+    const branch = document.getElementById('branch').value;
+    sub.innerHTML = '<option value="">-- المادة --</option>';
+    let list = ['العربية', 'الإنجليزية', 'الرياضيات', 'الدين'];
+    if (branch === 'SCI') list.push('الفيزياء', 'الكيمياء', 'الأحياء');
+    else if (branch === 'ART') list.push('التاريخ', 'الجغرافيا', 'العلوم');
+    else if (branch === 'TECH') list.push('الفيزياء', 'علم الحاسوب', 'تكنولوجيا المعلومات');
+    else list.push('العلوم', 'الاجتماعيات');
+    list.forEach(s => sub.innerHTML += '<option value="'+s+'">'+s+'</option>');
+    showNext('step-subject');
+}
+async function submitData() {
+    const btn = document.getElementById('submitBtn'); btn.disabled = true;
+    const code = document.getElementById('country').value + '-' + document.getElementById('grade').value + '-' + document.getElementById('branch').value + '-' + (subjectMap[document.getElementById('subject').value] || 'SUB') + '-' + document.getElementById('semester').value;
+    try {
+        await fetch('https://nonvillainously-lymphoblastic-susan.ngrok-free.dev/webhook/c7bd9b6b-5edc-4625-b8c0-1c3254d8af4b', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ full_code: code })
+        });
+        tg.showPopup({ title: 'نجاح', message: 'تم الإرسال: ' + code }, () => tg.close());
+    } catch (e) { alert("خطأ في الاتصال"); btn.disabled = false; }
+}
+</script>
+</body>
+</html>
