@@ -17,18 +17,18 @@ jobs:
 
     steps:
       # 1. Checkout repo
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 2. Build dist folder + generate config.js inside it
-      - name: Build project
+      # 2. Create clean build folder
+      - name: Build dist folder
         run: |
           mkdir dist
 
-          # Copy all project files into dist
-          cp -r . dist
+          # Copy ONLY needed files (IMPORTANT)
+          cp -r index.html js dist/
+          cp config.template.js dist/
 
-          # Choose webhook based on environment
+          # Choose webhook
           if [ "${{ github.event.inputs.env }}" = "prod" ]; then
             WEBHOOK="https://nonvillainously-lymphoblastic-susan.ngrok-free.dev/webhook/c7bd9b6b-5edc-4625-b8c0-1c3254d8af4b"
           else
@@ -36,9 +36,12 @@ jobs:
           fi
 
           # Generate config.js inside dist
-          sed "s|__WEBHOOK__|$WEBHOOK|g" config.template.js > dist/config.js
+          sed "s|__WEBHOOK__|$WEBHOOK|g" dist/config.template.js > dist/config.js
 
-      # 3. Deploy to GitHub Pages
+          # remove template from final build
+          rm dist/config.template.js
+
+      # 3. Deploy
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
