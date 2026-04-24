@@ -16,9 +16,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Set webhook
+      - name: Generate config.js from template
         run: |
           if [ "${{ github.event.inputs.env }}" = "prod" ]; then
             WEBHOOK="https://nonvillainously-lymphoblastic-susan.ngrok-free.dev/webhook/c7bd9b6b-5edc-4625-b8c0-1c3254d8af4b"
@@ -26,7 +27,7 @@ jobs:
             WEBHOOK="https://nonvillainously-lymphoblastic-susan.ngrok-free.dev/webhook-test/c7bd9b6b-5edc-4625-b8c0-1c3254d8af4b"
           fi
 
-          echo "window.APP_CONFIG = { WEBHOOK_URL: '$WEBHOOK' };" > config.js
+          sed "s|__WEBHOOK__|$WEBHOOK|g" config.template.js > config.js
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
