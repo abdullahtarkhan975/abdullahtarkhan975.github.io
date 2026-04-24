@@ -166,6 +166,7 @@ async function submit() {
 
     try {
         const WEBHOOK_URL = window.APP_CONFIG?.WEBHOOK_URL;
+        console.log(WEBHOOK_URL);
 
         await fetch(WEBHOOK_URL, {
             method: 'POST',
