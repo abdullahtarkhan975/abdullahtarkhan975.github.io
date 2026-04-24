@@ -40,6 +40,11 @@ button {
     border-radius: 12px;
 }
 
+.radio-group label {
+    display: block;
+    margin-bottom: 10px;
+}
+
 .progress-container {
     height: 6px;
     background: #eee;
