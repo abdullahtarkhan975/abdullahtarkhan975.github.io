@@ -11,39 +11,39 @@ on:
           - test
           - prod
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
+jobs:
+  build:
+    runs-on: ubuntu-latest
     steps:
-      # 1. Checkout repo
       - uses: actions/checkout@v4
 
-      # 2. Create clean build folder
-      - name: Build dist folder
+      - name: Build
         run: |
           mkdir dist
+          cp -r index.html js config.template.js dist/
 
-          # Copy ONLY needed files (IMPORTANT)
-          cp -r index.html js dist/
-          cp config.template.js dist/
-
-          # Choose webhook
           if [ "${{ github.event.inputs.env }}" = "prod" ]; then
             WEBHOOK="https://nonvillainously-lymphoblastic-susan.ngrok-free.dev/webhook/c7bd9b6b-5edc-4625-b8c0-1c3254d8af4b"
           else
             WEBHOOK="https://nonvillainously-lymphoblastic-susan.ngrok-free.dev/webhook-test/c7bd9b6b-5edc-4625-b8c0-1c3254d8af4b"
           fi
 
-          # Generate config.js inside dist
           sed "s|__WEBHOOK__|$WEBHOOK|g" dist/config.template.js > dist/config.js
-
-          # remove template from final build
           rm dist/config.template.js
 
-      # 3. Deploy
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: dist
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
