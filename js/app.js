@@ -139,9 +139,7 @@ function bindEvents() {
         showStep('step-subject');
     };
 
-    function getEnv() {
-        return document.querySelector('input[name="env"]:checked').value;
-    }
+
 
     subjectEl.onchange = () => showStep('step-semester');
     semesterEl.onchange = () => showStep('step-unit');
@@ -149,6 +147,10 @@ function bindEvents() {
     lessonEl.onchange = () => showStep('step-final');
 
     submitBtn.onclick = submit;
+}
+
+function getEnv() {
+    return document.querySelector('input[name="env"]:checked').value;
 }
 
 
@@ -177,6 +179,9 @@ async function submit() {
         };
 
         const WEBHOOK_URL = WEBHOOKS[env];
+        console.log(WEBHOOK_URL);
+
+
 
         await fetch(WEBHOOK_URL, {
             method: 'POST',
