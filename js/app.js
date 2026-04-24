@@ -139,6 +139,10 @@ function bindEvents() {
         showStep('step-subject');
     };
 
+    function getEnv() {
+        return document.querySelector('input[name="env"]:checked').value;
+    }
+
     subjectEl.onchange = () => showStep('step-semester');
     semesterEl.onchange = () => showStep('step-unit');
     unitEl.onchange = () => showStep('step-lesson');
@@ -165,8 +169,14 @@ async function submit() {
     console.log("FINAL CODE:", finalCode);
 
     try {
-        const WEBHOOK_URL = window.APP_CONFIG?.WEBHOOK_URL;
-        console.log(WEBHOOK_URL);
+        const env = getEnv();
+
+        const WEBHOOKS = {
+            test: "https://nonvillainously-lymphoblastic-susan.ngrok-free.dev/webhook-test/c7bd9b6b-5edc-4625-b8c0-1c3254d8af4b",
+            prod: "https://nonvillainously-lymphoblastic-susan.ngrok-free.dev/webhook/c7bd9b6b-5edc-4625-b8c0-1c3254d8af4b"
+        };
+
+        const WEBHOOK_URL = WEBHOOKS[env];
 
         await fetch(WEBHOOK_URL, {
             method: 'POST',
