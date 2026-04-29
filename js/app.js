@@ -10,6 +10,7 @@ const stageEl = document.getElementById('stage');
 const gradeEl = document.getElementById('grade');
 const branchEl = document.getElementById('branch');
 const subjectEl = document.getElementById('subject');
+const typeEl = document.getElementById('type');
 const semesterEl = document.getElementById('semester');
 const unitEl = document.getElementById('unit');
 const lessonEl = document.getElementById('lesson');
@@ -34,6 +35,12 @@ function init() {
     for (let i = 1; i <= 25; i++) {
         lessonEl.innerHTML += `<option value="L${i}">الدرس ${i}</option>`;
     }
+
+    typeEl.innerHTML = `
+        <option value="">-- اختر النوع --</option>
+        <option value="summary">ملخص</option>
+        <option value="questions">أسئلة</option>
+    `;
 
     bindEvents();
 }
@@ -141,7 +148,8 @@ function bindEvents() {
 
 
 
-    subjectEl.onchange = () => showStep('step-semester');
+    subjectEl.onchange = () => showStep('step-type');
+    typeEl.onchange = () => showStep('step-semester');
     semesterEl.onchange = () => showStep('step-unit');
     unitEl.onchange = () => showStep('step-lesson');
     lessonEl.onchange = () => showStep('step-final');
@@ -161,6 +169,7 @@ async function submit() {
     const grade = gradeEl.value;
     const branch = branchEl.value || 'GEN';
     const subject = mapSubject(subjectEl.value);
+    const type = typeEl.value || 'summary';
     const semester = semesterEl.value;
     const unit = unitEl.value;
     const lesson = lessonEl.value;
@@ -190,7 +199,8 @@ async function submit() {
             },
             body: JSON.stringify({
                 code: finalCode,
-                user_id: tg.initDataUnsafe?.user?.id || "unknown"
+                user_id: tg.initDataUnsafe?.user?.id || "unknown",
+                type: type
             })
         });
 
