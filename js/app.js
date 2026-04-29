@@ -176,7 +176,7 @@ async function submit() {
 
     const finalCode =
         `${country}-${stage}-${grade}-${branch}-${subject}-${semester}-${unit}-${lesson}`;
-            const planCode =
+    const planCode =
         `${country}-${stage}-${grade}-${branch}-${subject}-${semester}`;
 
     console.log("FINAL CODE:", finalCode);
