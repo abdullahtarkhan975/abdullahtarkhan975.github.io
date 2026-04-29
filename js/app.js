@@ -176,8 +176,11 @@ async function submit() {
 
     const finalCode =
         `${country}-${stage}-${grade}-${branch}-${subject}-${semester}-${unit}-${lesson}`;
+            const planCode =
+        `${country}-${stage}-${grade}-${branch}-${subject}-${semester}`;
 
     console.log("FINAL CODE:", finalCode);
+    console.log("PLAN CODE:", planCode);
 
     try {
         const env = getEnv();
@@ -199,6 +202,7 @@ async function submit() {
             },
             body: JSON.stringify({
                 code: finalCode,
+                plan_code: planCode,
                 user_id: tg.initDataUnsafe?.user?.id || "unknown",
                 type: type
             })
